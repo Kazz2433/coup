@@ -55,7 +55,7 @@ export async function poolRoutes(fastify:FastifyInstance){
     }) 
     
     //JOINING POOLS
-    fastify.post('/pools/:id/join',{
+    fastify.post('/pools/join',{
         onRequest:[authenticate]
     },async(req,res) => {
          const joinPoolBody = z.object({
@@ -115,6 +115,7 @@ export async function poolRoutes(fastify:FastifyInstance){
          return res.status(201).send()
     })
 
+    //LIST WHICH POOL USER IS IN
     fastify.get('/pools',{
         onRequest: [authenticate]
     },async (req) => {
@@ -126,12 +127,14 @@ export async function poolRoutes(fastify:FastifyInstance){
                     }
                 }
             },
+            //INCLUDIND HOW MANY PEOPLE
             include:{
                 _count:{
                     select:{
                         participants:true
                     }
                 },
+                //TAKING 4 USERS AVATAR
                 participants:{
                     select:{
                         id:true,
@@ -144,6 +147,7 @@ export async function poolRoutes(fastify:FastifyInstance){
                     },
                     take:4 
                 },
+                // TAKING OWNER POOLS NAME
                 owner:{
                     select:{
                         id:true,
@@ -153,6 +157,54 @@ export async function poolRoutes(fastify:FastifyInstance){
             }
         })
     })
+
+    //POOL DETAILS
+    fastify.get('/pools/:id',{
+        onRequest:[authenticate]
+    },async (req) => {
+        const getPoolParams = z.object({
+            id:z.string()
+        })
+
+        const {id} = getPoolParams.parse(req.params)
+
+        const pool = await prisma.pool.findUnique({
+            where:{
+                id
+            },
+            //INCLUDIND HOW MANY PEOPLE
+            include:{
+                _count:{
+                    select:{
+                        participants:true
+                    }
+                },
+                //TAKING 4 USERS AVATAR
+                participants:{
+                    select:{
+                        id:true,
+
+                        user:{
+                            select:{
+                                avatarUrl:true
+                            }
+                        }
+                    },
+                    take:4 
+                },
+                // TAKING OWNER POOLS NAME
+                owner:{
+                    select:{
+                        id:true,
+                        name:true
+                    }
+                }
+            }
+        })
+
+        return {pool}
+    })
+
 }
 
 
