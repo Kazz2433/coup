@@ -13,7 +13,7 @@ export async function gameRoutes(fastify:FastifyInstance){
         return {count}
     }) 
 
-    //LIST GAMES WITHIN A POOL
+    //LISTING GAMES WITHIN A POOL
     fastify.get('/pools/:id/games',{
         onRequest:[authenticate],
     },async (req) => {
